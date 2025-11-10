@@ -5,57 +5,53 @@ import (
 	serverconfig "github.com/cosmos/cosmos-sdk/server/config"
 )
 
-// initCometBFTConfig helps to override default CometBFT Config values.
-// return cmtcfg.DefaultConfig if no custom configuration is required for the application.
+// initCometBFTConfig 用于覆盖默认的 CometBFT 配置值。
+// 如果应用不需要自定义配置，则返回 cmtcfg.DefaultConfig。
 func initCometBFTConfig() *cmtcfg.Config {
 	cfg := cmtcfg.DefaultConfig()
 
-	// these values put a higher strain on node memory
-	// cfg.P2P.MaxNumInboundPeers = 100
-	// cfg.P2P.MaxNumOutboundPeers = 40
+	// 这些配置会让节点内存承受更大压力
+	// cfg.P2P.MaxNumInboundPeers = 100 示例：调高入站连接上限
+	// cfg.P2P.MaxNumOutboundPeers = 40 示例：调高出站连接上限
 
 	return cfg
 }
 
-// initAppConfig helps to override default appConfig template and configs.
-// return "", nil if no custom configuration is required for the application.
+// initAppConfig 用于覆盖默认的 appConfig 模板和配置。
+// 如果应用不需要自定义配置，则返回 "", nil。
 func initAppConfig() (string, interface{}) {
-	// The following code snippet is just for reference.
+	// 以下代码片段仅供参考。
 	type CustomAppConfig struct {
 		serverconfig.Config `mapstructure:",squash"`
 	}
 
-	// Optionally allow the chain developer to overwrite the SDK's default
-	// server config.
+	// 视情况允许链的开发者覆盖 SDK 的默认服务器配置。
 	srvCfg := serverconfig.DefaultConfig()
-	// The SDK's default minimum gas price is set to "" (empty value) inside
-	// app.toml. If left empty by validators, the node will halt on startup.
-	// However, the chain developer can set a default app.toml value for their
-	// validators here.
+	// SDK 在 app.toml 中将默认最小 gas 价格设为 ""（空值）。
+	// 如果验证人保持为空，节点会在启动时停止运行。
+	// 链的开发者可以在此为验证人设置 app.toml 的默认值。
 	//
-	// In summary:
-	// - if you leave srvCfg.MinGasPrices = "", all validators MUST tweak their
-	//   own app.toml config,
-	// - if you set srvCfg.MinGasPrices non-empty, validators CAN tweak their
-	//   own app.toml to override, or use this default value.
+	// 总结如下：
+	// - 若保持 srvCfg.MinGasPrices = ""，所有验证人必须自行调整各自的 app.toml 配置；
+	// - 若将 srvCfg.MinGasPrices 设置为非空，验证人可以通过修改自己的 app.toml 覆盖该值，或者直接使用这里的默认值。
 	//
-	// In tests, we set the min gas prices to 0.
-	// srvCfg.MinGasPrices = "0stake"
+	// 在测试环境中，我们将最小 gas 价格设为 0。
+	// srvCfg.MinGasPrices = "0stake" 示例：设置默认 gas 单价
 
 	customAppConfig := CustomAppConfig{
 		Config: *srvCfg,
 	}
 
 	customAppTemplate := serverconfig.DefaultConfigTemplate
-	// Edit the default template file
+	// 编辑默认模板文件
 	//
 	// customAppTemplate := serverconfig.DefaultConfigTemplate + `
 	// [wasm]
-	// # This is the maximum sdk gas (wasm and storage) that we allow for any x/wasm "smart" queries
-	// query_gas_limit = 300000
-	// # This is the number of wasm vm instances we keep cached in memory for speed-up
-	// # Warning: this is currently unstable and may lead to crashes, best to keep for 0 unless testing locally
-	// lru_size = 0`
+	// # 这是允许任意 x/wasm “智能”查询使用的最大 SDK gas（含 wasm 与存储）
+	// query_gas_limit = 300000  # 示例：将查询 gas 上限设为 300000
+	// # 这是为了提速而缓存于内存中的 wasm 虚拟机实例数量
+	// # 警告：当前此功能不够稳定，可能导致崩溃，除非本地测试建议保持为 0
+	// lru_size = 0  # 示例：维持 LRU 缓存大小为 0`
 
 	return customAppTemplate, customAppConfig
 }

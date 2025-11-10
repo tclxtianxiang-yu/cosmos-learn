@@ -20,7 +20,7 @@ import (
 	"cosmos-learn/app"
 )
 
-// NewRootCmd creates a new root command for cosmos-learnd. It is called once in the main function.
+// NewRootCmd 会创建 cosmos-learnd 的根命令，在 main 函数中会被调用一次。
 func NewRootCmd() *cobra.Command {
 	var (
 		autoCliOpts        autocli.AppOptions
@@ -47,7 +47,7 @@ func NewRootCmd() *cobra.Command {
 		Short:         "cosmoslearn node",
 		SilenceErrors: true,
 		PersistentPreRunE: func(cmd *cobra.Command, _ []string) error {
-			// set the default command outputs
+			// 设置命令默认的标准输出与标准错误
 			cmd.SetOut(cmd.OutOrStdout())
 			cmd.SetErr(cmd.ErrOrStderr())
 
@@ -73,9 +73,8 @@ func NewRootCmd() *cobra.Command {
 		},
 	}
 
-	// Since the IBC modules don't support dependency injection, we need to
-	// manually register the modules on the client side.
-	// This needs to be removed after IBC supports App Wiring.
+	// 由于 IBC 模块暂不支持依赖注入，因此需要在客户端手动注册这些模块。
+	// 等到 IBC 支持 App Wiring 后即可移除此逻辑。
 	ibcModules := app.RegisterIBC(clientCtx.Codec)
 	for name, mod := range ibcModules {
 		moduleBasicManager[name] = module.CoreAppModuleBasicAdaptor(name, mod)
@@ -91,8 +90,8 @@ func NewRootCmd() *cobra.Command {
 	return rootCmd
 }
 
-// ProvideClientContext creates and provides a fully initialized client.Context,
-// allowing it to be used for dependency injection and CLI operations.
+// ProvideClientContext 会创建并提供一个初始化完成的 client.Context，
+// 以便在依赖注入与 CLI 操作中使用。
 func ProvideClientContext(
 	appCodec codec.Codec,
 	interfaceRegistry codectypes.InterfaceRegistry,
@@ -106,12 +105,12 @@ func ProvideClientContext(
 		WithInput(os.Stdin).
 		WithAccountRetriever(types.AccountRetriever{}).
 		WithHomeDir(app.DefaultNodeHome).
-		WithViper(app.Name) // env variable prefix
+		WithViper(app.Name) // 环境变量前缀
 
-	// Read the config again to overwrite the default values with the values from the config file
+		// 再次读取配置，用配置文件中的值覆盖默认设置
 	clientCtx, _ = config.ReadFromClientConfig(clientCtx)
 
-	// textual is enabled by default, we need to re-create the tx config grpc instead of bank keeper.
+	// textual 默认启用，需要重新创建基于 gRPC 的交易配置，而不是沿用 bank keeper。
 	txConfigOpts.TextualCoinMetadataQueryFn = authtxconfig.NewGRPCCoinMetadataQueryFn(clientCtx)
 	txConfig, err := tx.NewTxConfigWithOptions(clientCtx.Codec, txConfigOpts)
 	if err != nil {
