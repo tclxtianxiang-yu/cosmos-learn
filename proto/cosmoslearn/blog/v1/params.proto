@@ -1,0 +1,13 @@
+syntax = "proto3";
+package cosmoslearn.blog.v1;
+
+import "amino/amino.proto";
+import "gogoproto/gogo.proto";
+
+option go_package = "cosmos-learn/x/blog/types";
+
+// Params defines the parameters for the module.
+message Params {
+  option (amino.name) = "cosmoslearn/x/blog/Params";
+  option (gogoproto.equal) = true;
+}

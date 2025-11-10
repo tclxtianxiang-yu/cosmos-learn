@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+package cosmoslearn.blog.v1;
+
+import "amino/amino.proto";
+import "cosmoslearn/blog/v1/params.proto";
+import "gogoproto/gogo.proto";
+
+option go_package = "cosmos-learn/x/blog/types";
+
+// GenesisState defines the blog module's genesis state.
+message GenesisState {
+  // params defines all the parameters of the module.
+  Params params = 1 [
+    (gogoproto.nullable) = false,
+    (amino.dont_omitempty) = true
+  ];
+  string port_id = 2;
+}

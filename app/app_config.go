@@ -1,6 +1,8 @@
 package app
 
 import (
+	_ "cosmos-learn/x/blog/module"
+	blogmoduletypes "cosmos-learn/x/blog/types"
 	"time"
 
 	runtimev1alpha1 "cosmossdk.io/api/cosmos/app/runtime/v1alpha1"
@@ -123,6 +125,7 @@ var (
 						// ibc modules
 						ibcexported.ModuleName,
 						// chain modules
+						blogmoduletypes.ModuleName,
 						// this line is used by starport scaffolding # stargate/app/beginBlockers
 					},
 					EndBlockers: []string{
@@ -131,6 +134,7 @@ var (
 						feegrant.ModuleName,
 						group.ModuleName,
 						// chain modules
+						blogmoduletypes.ModuleName,
 						// this line is used by starport scaffolding # stargate/app/endBlockers
 					},
 					// The following is mostly only needed when ModuleName != StoreKey name.
@@ -167,6 +171,7 @@ var (
 						ibctransfertypes.ModuleName,
 						icatypes.ModuleName,
 						// chain modules
+						blogmoduletypes.ModuleName,
 						// this line is used by starport scaffolding # stargate/app/initGenesis
 					},
 				}),
@@ -262,6 +267,10 @@ var (
 			{
 				Name:   epochstypes.ModuleName,
 				Config: appconfig.WrapAny(&epochsmodulev1.Module{}),
+			},
+			{
+				Name:   blogmoduletypes.ModuleName,
+				Config: appconfig.WrapAny(&blogmoduletypes.Module{}),
 			},
 			// this line is used by starport scaffolding # stargate/app/moduleConfig
 		},

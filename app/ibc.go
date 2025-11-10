@@ -1,6 +1,9 @@
 package app
 
 import (
+	blogmodule "cosmos-learn/x/blog/module"
+	blogmoduletypes "cosmos-learn/x/blog/types"
+
 	"cosmossdk.io/core/appmodule"
 	storetypes "cosmossdk.io/store/types"
 	"github.com/cosmos/cosmos-sdk/codec"
@@ -117,6 +120,8 @@ func (app *App) registerIBCModules(appOpts servertypes.AppOptions) error {
 	ibcv2Router := ibcapi.NewRouter().
 		AddRoute(ibctransfertypes.PortID, transferStackV2)
 
+	blogIBCModule := blogmodule.NewIBCModule(app.appCodec, app.BlogKeeper)
+	ibcRouter.AddRoute(blogmoduletypes.ModuleName, blogIBCModule)
 	// this line is used by starport scaffolding # ibc/app/module
 
 	app.IBCKeeper.SetRouter(ibcRouter)
