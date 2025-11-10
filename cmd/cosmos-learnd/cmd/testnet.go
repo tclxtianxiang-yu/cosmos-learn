@@ -57,17 +57,17 @@ it enables developers to configure their local environments to reflect mainnet c
 	return cmd
 }
 
-// newTestnetApp starts by running the normal newApp method. From there, the app interface returned is modified in order
-// for a testnet to be created from the provided app.
+// newTestnetApp 会先运行常规的 newApp 方法，然后对返回的应用接口进行修改，
+// 从而基于给定的应用创建测试网。
 func newTestnetApp(logger log.Logger, db dbm.DB, traceStore io.Writer, appOpts servertypes.AppOptions) servertypes.Application {
-	// Create an app and type cast to an App
+	// 创建应用实例并转换为 App 类型
 	newApp := newApp(logger, db, traceStore, appOpts)
 	testApp, ok := newApp.(*app.App)
 	if !ok {
 		panic("app created from newApp is not of type App")
 	}
 
-	// Get command args
+	// 获取命令行参数
 	args, err := getCommandArgs(appOpts)
 	if err != nil {
 		panic(err)
@@ -77,7 +77,7 @@ func newTestnetApp(logger log.Logger, db dbm.DB, traceStore io.Writer, appOpts s
 }
 
 func initAppForTestnet(app *app.App, args valArgs) *app.App {
-	// Required Changes:
+	// 必要的修改：
 	//
 	ctx := app.App.NewUncachedContext(true, cmtproto.Header{})
 
@@ -85,10 +85,10 @@ func initAppForTestnet(app *app.App, args valArgs) *app.App {
 	pubkeyAny, err := codectypes.NewAnyWithValue(pubkey)
 	handleErr(err)
 
-	// STAKING
+	// 质押（STAKING）
 	//
 
-	// Create Validator struct for our new validator.
+	// 为新的验证人创建 Validator 结构体。
 	newVal := stakingtypes.Validator{
 		OperatorAddress: args.newOperatorAddress,
 		ConsensusPubkey: pubkeyAny,
@@ -112,7 +112,7 @@ func initAppForTestnet(app *app.App, args valArgs) *app.App {
 	validator, err := app.StakingKeeper.ValidatorAddressCodec().StringToBytes(newVal.GetOperator())
 	handleErr(err)
 
-	// Remove all validators from power store
+	// 从 power 存储中移除所有验证人
 	stakingKey := app.GetKey(stakingtypes.ModuleName)
 	stakingStore := ctx.KVStore(stakingKey)
 	iterator, err := app.StakingKeeper.ValidatorsPowerStoreIterator(ctx)
@@ -123,7 +123,7 @@ func initAppForTestnet(app *app.App, args valArgs) *app.App {
 	}
 	iterator.Close()
 
-	// Remove all validators from last validators store
+	// 从 last validators 存储中移除所有验证人
 	iterator, err = app.StakingKeeper.LastValidatorsIterator(ctx)
 	handleErr(err)
 
@@ -132,40 +132,40 @@ func initAppForTestnet(app *app.App, args valArgs) *app.App {
 	}
 	iterator.Close()
 
-	// Remove all validators from validators store
+	// 从 validators 存储中移除所有验证人
 	iterator = stakingStore.Iterator(stakingtypes.ValidatorsKey, storetypes.PrefixEndBytes(stakingtypes.ValidatorsKey))
 	for ; iterator.Valid(); iterator.Next() {
 		stakingStore.Delete(iterator.Key())
 	}
 	iterator.Close()
 
-	// Remove all validators from unbonding queue
+	// 从解绑队列中移除所有验证人
 	iterator = stakingStore.Iterator(stakingtypes.ValidatorQueueKey, storetypes.PrefixEndBytes(stakingtypes.ValidatorQueueKey))
 	for ; iterator.Valid(); iterator.Next() {
 		stakingStore.Delete(iterator.Key())
 	}
 	iterator.Close()
 
-	// Add our validator to power and last validators store
+	// 将新的验证人加入 power 与 last validators 存储
 	handleErr(app.StakingKeeper.SetValidator(ctx, newVal))
 	handleErr(app.StakingKeeper.SetValidatorByConsAddr(ctx, newVal))
 	handleErr(app.StakingKeeper.SetValidatorByPowerIndex(ctx, newVal))
 	handleErr(app.StakingKeeper.SetLastValidatorPower(ctx, validator, 0))
 	handleErr(app.StakingKeeper.Hooks().AfterValidatorCreated(ctx, validator))
 
-	// DISTRIBUTION
+	// 分发（DISTRIBUTION）
 	//
 
-	// Initialize records for this validator across all distribution stores
+	// 在所有分发相关存储中初始化该验证人的记录
 	handleErr(app.DistrKeeper.SetValidatorHistoricalRewards(ctx, validator, 0, distrtypes.NewValidatorHistoricalRewards(sdk.DecCoins{}, 1)))
 	handleErr(app.DistrKeeper.SetValidatorCurrentRewards(ctx, validator, distrtypes.NewValidatorCurrentRewards(sdk.DecCoins{}, 1)))
 	handleErr(app.DistrKeeper.SetValidatorAccumulatedCommission(ctx, validator, distrtypes.InitialValidatorAccumulatedCommission()))
 	handleErr(app.DistrKeeper.SetValidatorOutstandingRewards(ctx, validator, distrtypes.ValidatorOutstandingRewards{Rewards: sdk.DecCoins{}}))
 
-	// SLASHING
+	// 惩罚（SLASHING）
 	//
 
-	// Set validator signing info for our new validator.
+	// 为新验证人设置签名信息。
 	newConsAddr := sdk.ConsAddress(args.newValAddr.Bytes())
 	newValidatorSigningInfo := slashingtypes.ValidatorSigningInfo{
 		Address:     newConsAddr.String(),
@@ -174,14 +174,14 @@ func initAppForTestnet(app *app.App, args valArgs) *app.App {
 	}
 	_ = app.SlashingKeeper.SetValidatorSigningInfo(ctx, newConsAddr, newValidatorSigningInfo)
 
-	// BANK
+	// 银行（BANK）
 	//
 	bondDenom, err := app.StakingKeeper.BondDenom(ctx)
 	handleErr(err)
 
 	defaultCoins := sdk.NewCoins(sdk.NewInt64Coin(bondDenom, 1000000000))
 
-	// Fund local accounts
+	// 为本地账户注资
 	for _, accountStr := range args.accountsToFund {
 		handleErr(app.BankKeeper.MintCoins(ctx, minttypes.ModuleName, defaultCoins))
 
@@ -194,7 +194,7 @@ func initAppForTestnet(app *app.App, args valArgs) *app.App {
 	return app
 }
 
-// parse the input flags and returns valArgs
+// 解析输入的标志并返回 valArgs
 func getCommandArgs(appOpts servertypes.AppOptions) (valArgs, error) {
 	args := valArgs{}
 
@@ -219,11 +219,11 @@ func getCommandArgs(appOpts servertypes.AppOptions) (valArgs, error) {
 	}
 	args.upgradeToTrigger = upgradeToTrigger
 
-	// parsing  and set accounts to fund
+	// 解析并设置需要注资的账户
 	accountsString := cast.ToString(appOpts.Get(flagAccountsToFund))
 	args.accountsToFund = append(args.accountsToFund, strings.Split(accountsString, ",")...)
 
-	// home dir
+	// 主目录
 	homeDir := cast.ToString(appOpts.Get(flags.FlagHome))
 	if homeDir == "" {
 		return args, errors.New("invalid home dir")
@@ -233,7 +233,7 @@ func getCommandArgs(appOpts servertypes.AppOptions) (valArgs, error) {
 	return args, nil
 }
 
-// handleErr prints the error and exits the program if the error is not nil
+// handleErr 会打印错误并在错误不为空时退出程序
 func handleErr(err error) {
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err.Error())
