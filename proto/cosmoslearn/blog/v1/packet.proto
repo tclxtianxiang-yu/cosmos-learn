@@ -1,4 +1,5 @@
 syntax = "proto3";
+
 package cosmoslearn.blog.v1;
 
 option go_package = "cosmos-learn/x/blog/types";
@@ -7,8 +8,20 @@ option go_package = "cosmos-learn/x/blog/types";
 message BlogPacketData {
   oneof packet {
     NoData noData = 1;
+    SendPostPacketData send_post_packet = 2;
   }
 }
 
 // NoData defines an empty data packet.
 message NoData {}
+
+// SendPostPacketData defines a struct for the packet payload
+message SendPostPacketData {
+  string title = 1;
+  string content = 2;
+}
+
+// SendPostPacketAck defines a struct for the packet acknowledgment
+message SendPostPacketAck {
+  string post_id = 1;
+}

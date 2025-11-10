@@ -1,5 +1,7 @@
 package types
 
+const EventTypeSendPostPacket = "sendPost_packet"
+
 // IBC events
 const (
 	EventTypeTimeout = "timeout"

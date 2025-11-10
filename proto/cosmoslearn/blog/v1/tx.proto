@@ -26,6 +26,9 @@ service Msg {
 
   // DeletePost defines the DeletePost RPC.
   rpc DeletePost(MsgDeletePost) returns (MsgDeletePostResponse);
+
+  // SendSendPost defines the SendSendPost RPC.
+  rpc SendSendPost(MsgSendSendPost) returns (MsgSendSendPostResponse);
 }
 
 // MsgUpdateParams is the Msg/UpdateParams request type.
@@ -83,3 +86,17 @@ message MsgDeletePost {
 
 // MsgDeletePostResponse defines the MsgDeletePostResponse message.
 message MsgDeletePostResponse {}
+
+// MsgSendSendPost defines the MsgSendSendPost message.
+message MsgSendSendPost {
+  option (cosmos.msg.v1.signer) = "creator";
+  string title = 5;
+  string content = 6;
+  string creator = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
+  string port = 2;
+  string channelID = 3;
+  uint64 timeoutTimestamp = 4;
+}
+
+// MsgSendSendPostResponse defines the MsgSendSendPostResponse message.
+message MsgSendSendPostResponse {}
