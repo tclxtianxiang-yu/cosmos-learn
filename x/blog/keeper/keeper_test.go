@@ -53,7 +53,7 @@ func initFixture(t *testing.T) *fixture {
 		},
 	)
 
-	// Initialize params
+	// 初始化模块参数。
 	if err := k.Params.Set(ctx, types.DefaultParams()); err != nil {
 		t.Fatalf("failed to set params: %v", err)
 	}

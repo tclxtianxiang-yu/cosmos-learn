@@ -32,7 +32,7 @@ var (
 	_ porttypes.IBCModule       = (*IBCModule)(nil)
 )
 
-// AppModule implements the AppModule interface that defines the inter-dependent methods that modules need to implement
+// AppModule 实现了 AppModule 接口，提供模块之间所需的互相依赖方法。
 type AppModule struct {
 	cdc        codec.Codec
 	keeper     keeper.Keeper
@@ -54,30 +54,30 @@ func NewAppModule(
 	}
 }
 
-// IsAppModule implements the appmodule.AppModule interface.
+// IsAppModule 实现 appmodule.AppModule 接口的标记方法。
 func (AppModule) IsAppModule() {}
 
-// Name returns the name of the module as a string.
+// Name 以字符串形式返回模块名称。
 func (AppModule) Name() string {
 	return types.ModuleName
 }
 
-// RegisterLegacyAminoCodec registers the amino codec
+// RegisterLegacyAminoCodec 注册 Amino 编解码器。
 func (AppModule) RegisterLegacyAminoCodec(*codec.LegacyAmino) {}
 
-// RegisterGRPCGatewayRoutes registers the gRPC Gateway routes for the module.
+// RegisterGRPCGatewayRoutes 为该模块注册 gRPC 网关路由。
 func (AppModule) RegisterGRPCGatewayRoutes(clientCtx client.Context, mux *runtime.ServeMux) {
 	if err := types.RegisterQueryHandlerClient(clientCtx.CmdContext, mux, types.NewQueryClient(clientCtx)); err != nil {
 		panic(err)
 	}
 }
 
-// RegisterInterfaces registers a module's interface types and their concrete implementations as proto.Message.
+// RegisterInterfaces 将模块的接口类型及其具体实现注册为 proto.Message。
 func (AppModule) RegisterInterfaces(registrar codectypes.InterfaceRegistry) {
 	types.RegisterInterfaces(registrar)
 }
 
-// RegisterServices registers a gRPC query service to respond to the module-specific gRPC queries
+// RegisterServices 注册 gRPC 查询服务，以响应模块特有的 gRPC 查询请求。
 func (am AppModule) RegisterServices(registrar grpc.ServiceRegistrar) error {
 	types.RegisterMsgServer(registrar, keeper.NewMsgServerImpl(am.keeper))
 	types.RegisterQueryServer(registrar, keeper.NewQueryServerImpl(am.keeper))
@@ -85,13 +85,13 @@ func (am AppModule) RegisterServices(registrar grpc.ServiceRegistrar) error {
 	return nil
 }
 
-// DefaultGenesis returns a default GenesisState for the module, marshalled to json.RawMessage.
-// The default GenesisState need to be defined by the module developer and is primarily used for testing.
+// DefaultGenesis 返回模块的默认 GenesisState，并序列化为 json.RawMessage。
+// 默认的 GenesisState 由模块开发者定义，主要用于测试场景。
 func (am AppModule) DefaultGenesis(codec.JSONCodec) json.RawMessage {
 	return am.cdc.MustMarshalJSON(types.DefaultGenesis())
 }
 
-// ValidateGenesis used to validate the GenesisState, given in its json.RawMessage form.
+// ValidateGenesis 用于校验 json.RawMessage 形式传入的 GenesisState。
 func (am AppModule) ValidateGenesis(_ codec.JSONCodec, _ client.TxEncodingConfig, bz json.RawMessage) error {
 	var genState types.GenesisState
 	if err := am.cdc.UnmarshalJSON(bz, &genState); err != nil {
@@ -101,10 +101,10 @@ func (am AppModule) ValidateGenesis(_ codec.JSONCodec, _ client.TxEncodingConfig
 	return genState.Validate()
 }
 
-// InitGenesis performs the module's genesis initialization. It returns no validator updates.
+// InitGenesis 执行模块的创世初始化，不会返回验证人更新信息。
 func (am AppModule) InitGenesis(ctx sdk.Context, _ codec.JSONCodec, gs json.RawMessage) {
 	var genState types.GenesisState
-	// Initialize global index to index in genesis state
+	// 初始化创世状态中的全局索引。
 	if err := am.cdc.UnmarshalJSON(gs, &genState); err != nil {
 		panic(fmt.Errorf("failed to unmarshal %s genesis state: %w", types.ModuleName, err))
 	}
@@ -114,7 +114,7 @@ func (am AppModule) InitGenesis(ctx sdk.Context, _ codec.JSONCodec, gs json.RawM
 	}
 }
 
-// ExportGenesis returns the module's exported genesis state as raw JSON bytes.
+// ExportGenesis 以原始 JSON 字节形式返回模块导出的创世状态。
 func (am AppModule) ExportGenesis(ctx sdk.Context, _ codec.JSONCodec) json.RawMessage {
 	genState, err := am.keeper.ExportGenesis(ctx)
 	if err != nil {
@@ -129,25 +129,25 @@ func (am AppModule) ExportGenesis(ctx sdk.Context, _ codec.JSONCodec) json.RawMe
 	return bz
 }
 
-// ConsensusVersion is a sequence number for state-breaking change of the module.
-// It should be incremented on each consensus-breaking change introduced by the module.
-// To avoid wrong/empty versions, the initial version should be set to 1.
+// ConsensusVersion 是模块发生状态破坏性变更时的序列号。
+// 每次模块引入破坏共识的变更都需要递增该值。
+// 为避免错误或空版本，初始值应设为 1。
 func (AppModule) ConsensusVersion() uint64 { return 1 }
 
-// BeginBlock contains the logic that is automatically triggered at the beginning of each block.
-// The begin block implementation is optional.
+// BeginBlock 承载每个区块开头自动触发的逻辑。
+// BeginBlock 的实现是可选的。
 func (am AppModule) BeginBlock(_ context.Context) error {
 	return nil
 }
 
-// EndBlock contains the logic that is automatically triggered at the end of each block.
-// The end block implementation is optional.
+// EndBlock 承载每个区块结束时自动触发的逻辑。
+// EndBlock 的实现是可选的。
 func (am AppModule) EndBlock(_ context.Context) error {
 	return nil
 }
 
-// GetTxCmd returns the root Tx command for the module.
-// These commands enrich the AutoCLI tx commands.
+// GetTxCmd 返回模块的根交易命令。
+// 这些命令会补充 AutoCLI 生成的交易命令。
 func (AppModule) GetTxCmd() *cobra.Command {
 	return cli.GetTxCmd()
 }

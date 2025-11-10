@@ -6,15 +6,15 @@ import (
 	host "github.com/cosmos/ibc-go/v10/modules/core/24-host"
 )
 
-// DefaultGenesis returns the default genesis state
+// DefaultGenesis 返回模块的默认创世状态。
 func DefaultGenesis() *GenesisState {
 	return &GenesisState{
 		Params: DefaultParams(),
 		PortId: PortID, PostList: []Post{}}
 }
 
-// Validate performs basic genesis state validation returning an error upon any
-// failure.
+// Validate 执行基础的创世状态校验，发现问题时返回错误，
+// 防止初始化失败。
 func (gs GenesisState) Validate() error {
 	if err := host.PortIdentifierValidator(gs.PortId); err != nil {
 		return err

@@ -15,13 +15,13 @@ import (
 	ibcexported "github.com/cosmos/ibc-go/v10/modules/core/exported"
 )
 
-// IBCModule implements the ICS26 interface for interchain accounts host chains
+// IBCModule 实现了跨链账户宿主链的 ICS26 接口。
 type IBCModule struct {
 	cdc    codec.Codec
 	keeper keeper.Keeper
 }
 
-// NewIBCModule creates a new IBCModule given the associated keeper
+// NewIBCModule 根据传入的 keeper 创建新的 IBCModule。
 func NewIBCModule(cdc codec.Codec, k keeper.Keeper) IBCModule {
 	return IBCModule{
 		cdc:    cdc,
@@ -29,7 +29,7 @@ func NewIBCModule(cdc codec.Codec, k keeper.Keeper) IBCModule {
 	}
 }
 
-// OnChanOpenInit implements the IBCModule interface
+// OnChanOpenInit 实现 IBCModule 接口。
 func (im IBCModule) OnChanOpenInit(
 	ctx sdk.Context,
 	order channeltypes.Order,
@@ -46,7 +46,7 @@ func (im IBCModule) OnChanOpenInit(
 	return version, nil
 }
 
-// OnChanOpenTry implements the IBCModule interface
+// OnChanOpenTry 实现 IBCModule 接口。
 func (im IBCModule) OnChanOpenTry(
 	ctx sdk.Context,
 	order channeltypes.Order,
@@ -63,7 +63,7 @@ func (im IBCModule) OnChanOpenTry(
 	return counterpartyVersion, nil
 }
 
-// OnChanOpenAck implements the IBCModule interface
+// OnChanOpenAck 实现 IBCModule 接口。
 func (im IBCModule) OnChanOpenAck(
 	ctx sdk.Context,
 	portID,
@@ -77,7 +77,7 @@ func (im IBCModule) OnChanOpenAck(
 	return nil
 }
 
-// OnChanOpenConfirm implements the IBCModule interface
+// OnChanOpenConfirm 实现 IBCModule 接口。
 func (im IBCModule) OnChanOpenConfirm(
 	ctx sdk.Context,
 	portID,
@@ -86,17 +86,17 @@ func (im IBCModule) OnChanOpenConfirm(
 	return nil
 }
 
-// OnChanCloseInit implements the IBCModule interface
+// OnChanCloseInit 实现 IBCModule 接口。
 func (im IBCModule) OnChanCloseInit(
 	ctx sdk.Context,
 	portID,
 	channelID string,
 ) error {
-	// Disallow user-initiated channel closing for channels
+	// 禁止用户主动关闭通道。
 	return errorsmod.Wrap(sdkerrors.ErrInvalidRequest, "user cannot close channel")
 }
 
-// OnChanCloseConfirm implements the IBCModule interface
+// OnChanCloseConfirm 实现 IBCModule 接口。
 func (im IBCModule) OnChanCloseConfirm(
 	ctx sdk.Context,
 	portID,
@@ -105,7 +105,7 @@ func (im IBCModule) OnChanCloseConfirm(
 	return nil
 }
 
-// OnRecvPacket implements the IBCModule interface
+// OnRecvPacket 实现 IBCModule 接口。
 func (im IBCModule) OnRecvPacket(
 	ctx sdk.Context,
 	channelVersion string,
@@ -119,7 +119,7 @@ func (im IBCModule) OnRecvPacket(
 		return channeltypes.NewErrorAcknowledgement(errorsmod.Wrapf(sdkerrors.ErrUnknownRequest, "cannot unmarshal packet data: %s", err.Error()))
 	}
 
-	// Dispatch packet
+	// 分发数据包。
 	switch packet := modulePacketData.Packet.(type) {
 	case *types.BlogPacketData_SendPostPacket:
 		packetAck, err := im.keeper.OnRecvSendPostPacket(ctx, modulePacket, *packet.SendPostPacket)
@@ -148,11 +148,11 @@ func (im IBCModule) OnRecvPacket(
 		return channeltypes.NewErrorAcknowledgement(err)
 	}
 
-	// NOTE: acknowledgement will be written synchronously during IBC handler execution.
+	// 注意：回执会在 IBC 处理流程执行时同步写入。
 	return ack
 }
 
-// OnAcknowledgementPacket implements the IBCModule interface
+// OnAcknowledgementPacket 实现 IBCModule 接口。
 func (im IBCModule) OnAcknowledgementPacket(
 	ctx sdk.Context,
 	channelVersion string,
@@ -172,7 +172,7 @@ func (im IBCModule) OnAcknowledgementPacket(
 
 	var eventType string
 
-	// Dispatch packet
+	// 分发数据包。
 	switch packet := modulePacketData.Packet.(type) {
 	case *types.BlogPacketData_SendPostPacket:
 		err := im.keeper.OnAcknowledgementSendPostPacket(ctx, modulePacket, *packet.SendPostPacket, ack)
@@ -213,7 +213,7 @@ func (im IBCModule) OnAcknowledgementPacket(
 	return nil
 }
 
-// OnTimeoutPacket implements the IBCModule interface
+// OnTimeoutPacket 实现 IBCModule 接口。
 func (im IBCModule) OnTimeoutPacket(
 	ctx sdk.Context,
 	channelVersion string,
@@ -225,7 +225,7 @@ func (im IBCModule) OnTimeoutPacket(
 		return errorsmod.Wrapf(sdkerrors.ErrUnknownRequest, "cannot unmarshal packet data: %s", err.Error())
 	}
 
-	// Dispatch packet
+	// 分发数据包。
 	switch packet := modulePacketData.Packet.(type) {
 	case *types.BlogPacketData_SendPostPacket:
 		err := im.keeper.OnTimeoutSendPostPacket(ctx, modulePacket, *packet.SendPostPacket)

@@ -6,7 +6,7 @@ import (
 	"cosmos-learn/x/blog/types"
 )
 
-// AutoCLIOptions implements the autocli.HasAutoCLIConfig interface.
+// AutoCLIOptions 实现了 autocli.HasAutoCLIConfig 接口。
 func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 	return &autocliv1.ModuleOptions{
 		Query: &autocliv1.ServiceCommandDescriptor{
@@ -29,16 +29,16 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 					Alias:          []string{"show-post"},
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{{ProtoField: "id"}},
 				},
-				// this line is used by ignite scaffolding # autocli/query
+				// 此行供 Ignite 脚手架使用 # autocli/query
 			},
 		},
 		Tx: &autocliv1.ServiceCommandDescriptor{
 			Service:              types.Msg_serviceDesc.ServiceName,
-			EnhanceCustomCommand: true, // only required if you want to use the custom command
+			EnhanceCustomCommand: true, // 仅当需要启用自定义命令时才必需
 			RpcCommandOptions: []*autocliv1.RpcCommandOptions{
 				{
 					RpcMethod: "UpdateParams",
-					Skip:      true, // skipped because authority gated
+					Skip:      true, // 因为受权限控制而跳过
 				},
 				{
 					RpcMethod:      "CreatePost",
@@ -58,7 +58,7 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 					Short:          "Delete post",
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{{ProtoField: "id"}},
 				},
-				// this line is used by ignite scaffolding # autocli/tx
+				// 此行供 Ignite 脚手架使用 # autocli/tx
 			},
 		},
 	}

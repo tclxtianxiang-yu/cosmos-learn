@@ -1,6 +1,6 @@
 package types
 
-// GetBytes is a helper for serialising
+// GetBytes 提供序列化辅助方法。
 func (p SendPostPacketData) GetBytes() ([]byte, error) {
 	var modulePacket BlogPacketData
 

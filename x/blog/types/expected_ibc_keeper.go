@@ -7,7 +7,7 @@ import (
 	channeltypes "github.com/cosmos/ibc-go/v10/modules/core/04-channel/types"
 )
 
-// ChannelKeeper defines the expected IBC channel keeper.
+// ChannelKeeper 定义了期望的 IBC 通道 keeper 接口。
 type ChannelKeeper interface {
 	GetChannel(ctx context.Context, portID, channelID string) (channeltypes.Channel, bool)
 	GetNextSequenceSend(ctx context.Context, portID, channelID string) (uint64, bool)

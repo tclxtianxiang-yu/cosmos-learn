@@ -3,30 +3,30 @@ package types
 import "cosmossdk.io/collections"
 
 const (
-	// ModuleName defines the module name
+	// ModuleName 定义模块名称。
 	ModuleName = "blog"
 
-	// StoreKey defines the primary module store key
+	// StoreKey 定义模块的主存储键。
 	StoreKey = ModuleName
 
-	// GovModuleName duplicates the gov module's name to avoid a dependency with x/gov.
-	// It should be synced with the gov module's name if it is ever changed.
-	// See: https://github.com/cosmos/cosmos-sdk/blob/v0.52.0-beta.2/x/gov/types/keys.go#L9
+	// GovModuleName 复刻治理模块名称，以避免直接依赖 x/gov。
+	// 如若治理模块名称调整，此处也需同步更新。
+	// 参见：https://github.com/cosmos/cosmos-sdk/blob/v0.52.0-beta.2/x/gov/types/keys.go#L9
 	GovModuleName = "gov"
 
-	// Version defines the current version the IBC module supports
+	// Version 定义 IBC 模块当前支持的版本。
 	Version = "blog-1"
 
-	// PortID is the default port id that module binds to
+	// PortID 是模块绑定的默认端口标识。
 	PortID = "blog"
 )
 
 var (
-	// PortKey defines the key to store the port ID in store
+	// PortKey 定义在存储中保存端口 ID 的键。
 	PortKey = collections.NewPrefix("blog-port-")
 )
 
-// ParamsKey is the prefix to retrieve all Params
+// ParamsKey 是读取全部 Params 的前缀。
 var ParamsKey = collections.NewPrefix("p_blog")
 
 var (

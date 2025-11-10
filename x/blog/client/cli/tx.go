@@ -15,7 +15,7 @@ var DefaultRelativePacketTimeoutTimestamp = uint64((time.Duration(10) * time.Min
 
 const listSeparator = ","
 
-// GetTxCmd returns the transaction commands for this module.
+// GetTxCmd 返回该模块的交易命令集合。
 func GetTxCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:                        types.ModuleName,

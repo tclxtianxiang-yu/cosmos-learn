@@ -6,8 +6,7 @@ import (
 
 var _ types.QueryServer = queryServer{}
 
-// NewQueryServerImpl returns an implementation of the QueryServer interface
-// for the provided Keeper.
+// NewQueryServerImpl 根据传入的 Keeper 返回 QueryServer 接口实现。
 func NewQueryServerImpl(k Keeper) types.QueryServer {
 	return queryServer{k}
 }

@@ -12,7 +12,7 @@ import (
 )
 
 func (k msgServer) SendSendPost(ctx context.Context, msg *types.MsgSendSendPost) (*types.MsgSendSendPostResponse, error) {
-	// validate incoming message
+	// 校验传入的消息。
 	if _, err := k.addressCodec.StringToBytes(msg.Creator); err != nil {
 		return nil, errorsmod.Wrap(sdkerrors.ErrInvalidAddress, fmt.Sprintf("invalid address: %s", err))
 	}
@@ -29,15 +29,15 @@ func (k msgServer) SendSendPost(ctx context.Context, msg *types.MsgSendSendPost)
 		return nil, errorsmod.Wrap(sdkerrors.ErrInvalidRequest, "invalid packet timeout")
 	}
 
-	// TODO: logic before transmitting the packet
+	// TODO: 在发送数据包前补充必要的业务逻辑。
 
-	// Construct the packet
+	// 构造待发送的数据包。
 	var packet types.SendPostPacketData
 
 	packet.Title = msg.Title
 	packet.Content = msg.Content
 
-	// Transmit the packet
+	// 发送数据包。
 	_, err := k.TransmitSendPostPacket(
 		ctx,
 		packet,

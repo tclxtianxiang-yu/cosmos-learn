@@ -54,7 +54,7 @@ func (k msgServer) UpdatePost(ctx context.Context, msg *types.MsgUpdatePost) (*t
 		Content: msg.Content,
 	}
 
-	// Checks that the element exists
+	// 检查目标元素是否存在。
 	val, err := k.Post.Get(ctx, msg.Id)
 	if err != nil {
 		if errors.Is(err, collections.ErrNotFound) {
@@ -64,7 +64,7 @@ func (k msgServer) UpdatePost(ctx context.Context, msg *types.MsgUpdatePost) (*t
 		return nil, errorsmod.Wrap(sdkerrors.ErrLogic, "failed to get post")
 	}
 
-	// Checks if the msg creator is the same as the current owner
+	// 校验消息创建者是否为当前所有者。
 	if msg.Creator != val.Creator {
 		return nil, errorsmod.Wrap(sdkerrors.ErrUnauthorized, "incorrect owner")
 	}
@@ -81,7 +81,7 @@ func (k msgServer) DeletePost(ctx context.Context, msg *types.MsgDeletePost) (*t
 		return nil, errorsmod.Wrap(sdkerrors.ErrInvalidAddress, fmt.Sprintf("invalid address: %s", err))
 	}
 
-	// Checks that the element exists
+	// 检查目标元素是否存在。
 	val, err := k.Post.Get(ctx, msg.Id)
 	if err != nil {
 		if errors.Is(err, collections.ErrNotFound) {
@@ -91,7 +91,7 @@ func (k msgServer) DeletePost(ctx context.Context, msg *types.MsgDeletePost) (*t
 		return nil, errorsmod.Wrap(sdkerrors.ErrLogic, "failed to get post")
 	}
 
-	// Checks if the msg creator is the same as the current owner
+	// 校验消息创建者是否为当前所有者。
 	if msg.Creator != val.Creator {
 		return nil, errorsmod.Wrap(sdkerrors.ErrUnauthorized, "incorrect owner")
 	}
