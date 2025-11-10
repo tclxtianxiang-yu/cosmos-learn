@@ -15,7 +15,7 @@ import (
 	simcli "github.com/cosmos/cosmos-sdk/x/simulation/client/cli"
 )
 
-// Profile with:
+// 可使用以下命令进行性能分析：
 // `go test -benchmem -run=^$ ./app -bench ^BenchmarkFullAppSimulation$ -Commit=true -cpuprofile cpu.out`
 func BenchmarkFullAppSimulation(b *testing.B) {
 	b.ReportAllocs()
@@ -51,20 +51,20 @@ func BenchmarkFullAppSimulation(b *testing.B) {
 
 	app := New(logger, db, nil, true, appOptions, interBlockCacheOpt(), baseapp.SetChainID(SimAppChainID))
 
-	// run randomized simulation
+	// 运行随机化模拟
 	_, simParams, simErr := simulation.SimulateFromSeed(
 		b,
 		os.Stdout,
 		app.BaseApp,
 		simtestutil.AppStateFn(app.AppCodec(), app.SimulationManager(), app.DefaultGenesis()),
-		simtypes.RandomAccounts, // Replace with own random account function if using keys other than secp256k1
+		simtypes.RandomAccounts, // 若使用非 secp256k1 密钥，可替换为自定义随机账户函数
 		simtestutil.BuildSimulationOperations(app, app.AppCodec(), config, app.TxConfig()),
 		BlockedAddresses(),
 		config,
 		app.AppCodec(),
 	)
 
-	// export state and simParams before the simulation error is checked
+	// 在检查模拟报错前导出状态与模拟参数
 	if err = simtestutil.CheckExportSimulation(app, config, simParams); err != nil {
 		b.Fatal(err)
 	}

@@ -15,14 +15,12 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
-// ExportAppStateAndValidators exports the state of the application for a genesis
-// file.
+// ExportAppStateAndValidators 将应用状态导出为创世文件所需的数据。
 func (app *App) ExportAppStateAndValidators(forZeroHeight bool, jailAllowedAddrs, modulesToExport []string) (servertypes.ExportedApp, error) {
-	// as if they could withdraw from the start of the next block
+	// 假设验证人可以从下一个区块开始提款
 	ctx := app.NewContextLegacy(true, cmtproto.Header{Height: app.LastBlockHeight()})
 
-	// We export at last height + 1, because that's the height at which
-	// CometBFT will start InitChain.
+	// 我们以最后区块高度加一的高度导出，因为 CometBFT 会在该高度启动 InitChain。
 	height := app.LastBlockHeight() + 1
 	if forZeroHeight {
 		height = 0
@@ -49,14 +47,14 @@ func (app *App) ExportAppStateAndValidators(forZeroHeight bool, jailAllowedAddrs
 	}, err
 }
 
-// prepForZeroHeightGenesis prepares for fresh start at zero height
-// NOTE zero height genesis is a temporary feature which will be deprecated
+// prepForZeroHeightGenesis 用于在高度为零时重新启动链。
+// 注意：零高度创世是一个即将废弃的临时功能，
 //
-//	in favor of export at a block height
+//	后续将以按区块高度导出方案取而代之。
 func (app *App) prepForZeroHeightGenesis(ctx sdk.Context, jailAllowedAddrs []string) {
 	applyAllowedAddrs := false
 
-	// check if there is a allowed address list
+	// 检查是否传入允许豁免的地址列表
 	if len(jailAllowedAddrs) > 0 {
 		applyAllowedAddrs = true
 	}
@@ -73,7 +71,7 @@ func (app *App) prepForZeroHeightGenesis(ctx sdk.Context, jailAllowedAddrs []str
 
 	/* Handle fee distribution state. */
 
-	// withdraw all validator commission
+	// 提取所有验证人的佣金
 	err := app.StakingKeeper.IterateValidators(ctx, func(_ int64, val stakingtypes.ValidatorI) (stop bool) {
 		valBz, err := app.StakingKeeper.ValidatorAddressCodec().StringToBytes(val.GetOperator())
 		if err != nil {
@@ -86,7 +84,7 @@ func (app *App) prepForZeroHeightGenesis(ctx sdk.Context, jailAllowedAddrs []str
 		panic(err)
 	}
 
-	// withdraw all delegator rewards
+	// 提取所有委托人的奖励
 	dels, err := app.StakingKeeper.GetAllDelegations(ctx)
 	if err != nil {
 		panic(err)
@@ -106,23 +104,23 @@ func (app *App) prepForZeroHeightGenesis(ctx sdk.Context, jailAllowedAddrs []str
 		_, _ = app.DistrKeeper.WithdrawDelegationRewards(ctx, delAddr, valAddr)
 	}
 
-	// clear validator slash events
+	// 清理验证人的惩罚事件
 	app.DistrKeeper.DeleteAllValidatorSlashEvents(ctx)
 
-	// clear validator historical rewards
+	// 清理验证人的历史奖励
 	app.DistrKeeper.DeleteAllValidatorHistoricalRewards(ctx)
 
-	// set context height to zero
+	// 将上下文高度设置为零
 	height := ctx.BlockHeight()
 	ctx = ctx.WithBlockHeight(0)
 
-	// reinitialize all validators
+	// 重新初始化所有验证人
 	err = app.StakingKeeper.IterateValidators(ctx, func(_ int64, val stakingtypes.ValidatorI) (stop bool) {
 		valBz, err := app.StakingKeeper.ValidatorAddressCodec().StringToBytes(val.GetOperator())
 		if err != nil {
 			panic(err)
 		}
-		// donate any unwithdrawn outstanding reward tokens to the community pool
+		// 将尚未提取的奖励代币捐赠到社区资金池
 		rewards, err := app.DistrKeeper.GetValidatorOutstandingRewardsCoins(ctx, valBz)
 		if err != nil {
 			panic(err)
@@ -145,7 +143,7 @@ func (app *App) prepForZeroHeightGenesis(ctx sdk.Context, jailAllowedAddrs []str
 		panic(err)
 	}
 
-	// reinitialize all delegations
+	// 重新初始化所有委托关系
 	for _, del := range dels {
 		valAddr, err := app.InterfaceRegistry().SigningContext().ValidatorAddressCodec().StringToBytes(del.ValidatorAddress)
 		if err != nil {
@@ -157,22 +155,22 @@ func (app *App) prepForZeroHeightGenesis(ctx sdk.Context, jailAllowedAddrs []str
 		}
 
 		if err := app.DistrKeeper.Hooks().BeforeDelegationCreated(ctx, delAddr, valAddr); err != nil {
-			// never called as BeforeDelegationCreated always returns nil
+			// 实际不会触发，因为 BeforeDelegationCreated 总是返回 nil
 			panic(fmt.Errorf("error while incrementing period: %w", err))
 		}
 
 		if err := app.DistrKeeper.Hooks().AfterDelegationModified(ctx, delAddr, valAddr); err != nil {
-			// never called as AfterDelegationModified always returns nil
+			// 实际不会触发，因为 AfterDelegationModified 总是返回 nil
 			panic(fmt.Errorf("error while creating a new delegation period record: %w", err))
 		}
 	}
 
-	// reset context height
+	// 恢复上下文高度
 	ctx = ctx.WithBlockHeight(height)
 
 	/* Handle staking state. */
 
-	// iterate through redelegations, reset creation height
+	// 遍历再委托记录并重置创建高度
 	err = app.StakingKeeper.IterateRedelegations(ctx, func(_ int64, red stakingtypes.Redelegation) (stop bool) {
 		for i := range red.Entries {
 			red.Entries[i].CreationHeight = 0
@@ -187,7 +185,7 @@ func (app *App) prepForZeroHeightGenesis(ctx sdk.Context, jailAllowedAddrs []str
 		panic(err)
 	}
 
-	// iterate through unbonding delegations, reset creation height
+	// 遍历解除委托记录并重置创建高度
 	err = app.StakingKeeper.IterateUnbondingDelegations(ctx, func(_ int64, ubd stakingtypes.UnbondingDelegation) (stop bool) {
 		for i := range ubd.Entries {
 			ubd.Entries[i].CreationHeight = 0
@@ -202,8 +200,7 @@ func (app *App) prepForZeroHeightGenesis(ctx sdk.Context, jailAllowedAddrs []str
 		panic(err)
 	}
 
-	// Iterate through validators by power descending, reset bond heights, and
-	// update bond intra-tx counters.
+	// 按投票权从高到低遍历验证人，重置抵押高度，并更新抵押计数器。
 	store := ctx.KVStore(app.GetKey(stakingtypes.StoreKey))
 	iter := storetypes.KVStoreReversePrefixIterator(store, stakingtypes.ValidatorsKey)
 
@@ -241,7 +238,7 @@ func (app *App) prepForZeroHeightGenesis(ctx sdk.Context, jailAllowedAddrs []str
 
 	/* Handle slashing state. */
 
-	// reset start height on signing infos
+	// 将签名信息的起始高度重置为零
 	if err := app.SlashingKeeper.IterateValidatorSigningInfos(
 		ctx,
 		func(addr sdk.ConsAddress, info slashingtypes.ValidatorSigningInfo) (stop bool) {
