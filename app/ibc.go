@@ -35,9 +35,9 @@ import (
 	ibctm "github.com/cosmos/ibc-go/v10/modules/light-clients/07-tendermint"
 )
 
-// registerIBCModules register IBC keepers and non dependency inject modules.
+// registerIBCModules 注册 IBC 相关的 keeper 以及未通过依赖注入管理的模块。
 func (app *App) registerIBCModules(appOpts servertypes.AppOptions) error {
-	// set up non depinject support modules store keys
+	// 设置未由 depinject 管理的模块所需的 StoreKey
 	if err := app.RegisterStores(
 		storetypes.NewKVStoreKey(ibcexported.StoreKey),
 		storetypes.NewKVStoreKey(ibctransfertypes.StoreKey),
@@ -47,7 +47,7 @@ func (app *App) registerIBCModules(appOpts servertypes.AppOptions) error {
 		return err
 	}
 
-	// register the key tables for legacy param subspaces
+	// 为遗留的参数子空间注册参数表
 	keyTable := ibcclienttypes.ParamKeyTable()
 	keyTable.RegisterParamSet(&ibcconnectiontypes.Params{})
 	app.ParamsKeeper.Subspace(ibcexported.ModuleName).WithKeyTable(keyTable)
@@ -57,7 +57,7 @@ func (app *App) registerIBCModules(appOpts servertypes.AppOptions) error {
 
 	govModuleAddr, _ := app.AuthKeeper.AddressCodec().BytesToString(authtypes.NewModuleAddress(govtypes.ModuleName))
 
-	// Create IBC keeper
+	// 创建 IBC keeper
 	app.IBCKeeper = ibckeeper.NewKeeper(
 		app.appCodec,
 		runtime.NewKVStoreService(app.GetKey(ibcexported.StoreKey)),
@@ -66,7 +66,7 @@ func (app *App) registerIBCModules(appOpts servertypes.AppOptions) error {
 		govModuleAddr,
 	)
 
-	// Create IBC transfer keeper
+	// 创建 IBC 转账 keeper
 	app.TransferKeeper = ibctransferkeeper.NewKeeper(
 		app.appCodec,
 		runtime.NewKVStoreService(app.GetKey(ibctransfertypes.StoreKey)),
@@ -79,12 +79,12 @@ func (app *App) registerIBCModules(appOpts servertypes.AppOptions) error {
 		govModuleAddr,
 	)
 
-	// Create interchain account keepers
+	// 创建跨链账户 keeper
 	app.ICAHostKeeper = icahostkeeper.NewKeeper(
 		app.appCodec,
 		runtime.NewKVStoreService(app.GetKey(icahosttypes.StoreKey)),
 		app.GetSubspace(icahosttypes.SubModuleName),
-		app.IBCKeeper.ChannelKeeper, // ICS4Wrapper
+		app.IBCKeeper.ChannelKeeper, // ICS4 包装器
 		app.IBCKeeper.ChannelKeeper,
 		app.AuthKeeper,
 		app.MsgServiceRouter(),
@@ -102,7 +102,7 @@ func (app *App) registerIBCModules(appOpts servertypes.AppOptions) error {
 		govModuleAddr,
 	)
 
-	// create IBC module from bottom to top of stack
+	// 自下而上构建 IBC 模块栈
 	var (
 		transferStack      porttypes.IBCModule = ibctransfer.NewIBCModule(app.TransferKeeper)
 		transferStackV2    ibcapi.IBCModule    = ibctransferv2.NewIBCModule(app.TransferKeeper)
@@ -110,19 +110,19 @@ func (app *App) registerIBCModules(appOpts servertypes.AppOptions) error {
 		icaHostStack       porttypes.IBCModule = icahost.NewIBCModule(app.ICAHostKeeper)
 	)
 
-	// create IBC v1 router, add transfer route, then set it on the keeper
+	// 创建 IBC v1 路由，挂载转账与 ICA 路由后注入 keeper
 	ibcRouter := porttypes.NewRouter().
 		AddRoute(ibctransfertypes.ModuleName, transferStack).
 		AddRoute(icacontrollertypes.SubModuleName, icaControllerStack).
 		AddRoute(icahosttypes.SubModuleName, icaHostStack)
 
-	// create IBC v2 router, add transfer route, then set it on the keeper
+		// 创建 IBC v2 路由，添加转账路由后注入 keeper
 	ibcv2Router := ibcapi.NewRouter().
 		AddRoute(ibctransfertypes.PortID, transferStackV2)
 
 	blogIBCModule := blogmodule.NewIBCModule(app.appCodec, app.BlogKeeper)
 	ibcRouter.AddRoute(blogmoduletypes.ModuleName, blogIBCModule)
-	// this line is used by starport scaffolding # ibc/app/module
+	// starport 脚手架使用的占位行 # ibc/app/module
 
 	app.IBCKeeper.SetRouter(ibcRouter)
 	app.IBCKeeper.SetRouterV2(ibcv2Router)
@@ -136,7 +136,7 @@ func (app *App) registerIBCModules(appOpts servertypes.AppOptions) error {
 	soloLightClientModule := solomachine.NewLightClientModule(app.appCodec, storeProvider)
 	clientKeeper.AddRoute(solomachine.ModuleName, &soloLightClientModule)
 
-	// register IBC modules
+	// 注册 IBC 模块
 	if err := app.RegisterModules(
 		ibc.NewAppModule(app.IBCKeeper),
 		ibctransfer.NewAppModule(app.TransferKeeper),
@@ -150,9 +150,8 @@ func (app *App) registerIBCModules(appOpts servertypes.AppOptions) error {
 	return nil
 }
 
-// RegisterIBC Since the IBC modules don't support dependency injection,
-// we need to manually register the modules on the client side.
-// This needs to be removed after IBC supports App Wiring.
+// RegisterIBC 用于在客户端侧手动注册不支持依赖注入的 IBC 模块。
+// 一旦 IBC 支持 App Wiring，这段逻辑就可以移除。
 func RegisterIBC(cdc codec.Codec) map[string]appmodule.AppModule {
 	modules := map[string]appmodule.AppModule{
 		ibcexported.ModuleName:      ibc.NewAppModule(&ibckeeper.Keeper{}),

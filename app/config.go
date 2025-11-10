@@ -3,18 +3,18 @@ package app
 import sdk "github.com/cosmos/cosmos-sdk/types"
 
 func init() {
-	// Set bond denom
+	// 设置质押代币的面额单位
 
 	sdk.DefaultBondDenom = "stake"
 
-	// Set address prefixes
+	// 设置地址前缀
 	accountPubKeyPrefix := AccountAddressPrefix + "pub"
 	validatorAddressPrefix := AccountAddressPrefix + "valoper"
 	validatorPubKeyPrefix := AccountAddressPrefix + "valoperpub"
 	consNodeAddressPrefix := AccountAddressPrefix + "valcons"
 	consNodePubKeyPrefix := AccountAddressPrefix + "valconspub"
 
-	// Set and seal config
+	// 设置并锁定配置
 	config := sdk.GetConfig()
 	config.SetCoinType(ChainCoinType)
 	config.SetBech32PrefixForAccount(AccountAddressPrefix, accountPubKeyPrefix)
