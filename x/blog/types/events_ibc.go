@@ -2,7 +2,7 @@ package types
 
 const EventTypeSendPostPacket = "sendPost_packet"
 
-// IBC events
+// IBC 事件类型。
 const (
 	EventTypeTimeout = "timeout"
 

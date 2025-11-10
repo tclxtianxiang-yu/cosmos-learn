@@ -9,7 +9,7 @@ import (
 	"cosmossdk.io/collections"
 )
 
-// InitGenesis initializes the module's state from a provided genesis state.
+// InitGenesis 根据提供的创世状态初始化模块。
 func (k Keeper) InitGenesis(ctx context.Context, genState types.GenesisState) error {
 	if err := k.Port.Set(ctx, genState.PortId); err != nil {
 		return err
@@ -27,7 +27,7 @@ func (k Keeper) InitGenesis(ctx context.Context, genState types.GenesisState) er
 	return k.Params.Set(ctx, genState.Params)
 }
 
-// ExportGenesis returns the module's exported genesis.
+// ExportGenesis 返回模块导出的创世状态。
 func (k Keeper) ExportGenesis(ctx context.Context) (*types.GenesisState, error) {
 	var err error
 

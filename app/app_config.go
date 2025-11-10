@@ -28,43 +28,43 @@ import (
 	upgrademodulev1 "cosmossdk.io/api/cosmos/upgrade/module/v1"
 	vestingmodulev1 "cosmossdk.io/api/cosmos/vesting/module/v1"
 	"cosmossdk.io/depinject/appconfig"
-	_ "cosmossdk.io/x/circuit" // import for side-effects
+	_ "cosmossdk.io/x/circuit" // 为副作用而导入
 	circuittypes "cosmossdk.io/x/circuit/types"
-	_ "cosmossdk.io/x/evidence" // import for side-effects
+	_ "cosmossdk.io/x/evidence" // 为副作用而导入
 	evidencetypes "cosmossdk.io/x/evidence/types"
 	"cosmossdk.io/x/feegrant"
-	_ "cosmossdk.io/x/feegrant/module" // import for side-effects
+	_ "cosmossdk.io/x/feegrant/module" // 为副作用而导入
 	"cosmossdk.io/x/nft"
-	_ "cosmossdk.io/x/nft/module" // import for side-effects
-	_ "cosmossdk.io/x/upgrade"    // import for side-effects
+	_ "cosmossdk.io/x/nft/module" // 为副作用而导入
+	_ "cosmossdk.io/x/upgrade"    // 为副作用而导入
 	upgradetypes "cosmossdk.io/x/upgrade/types"
 	"github.com/cosmos/cosmos-sdk/runtime"
-	_ "github.com/cosmos/cosmos-sdk/x/auth/tx/config" // import for side-effects
+	_ "github.com/cosmos/cosmos-sdk/x/auth/tx/config" // 为副作用而导入
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
-	_ "github.com/cosmos/cosmos-sdk/x/auth/vesting" // import for side-effects
+	_ "github.com/cosmos/cosmos-sdk/x/auth/vesting" // 为副作用而导入
 	vestingtypes "github.com/cosmos/cosmos-sdk/x/auth/vesting/types"
 	"github.com/cosmos/cosmos-sdk/x/authz"
-	_ "github.com/cosmos/cosmos-sdk/x/authz/module" // import for side-effects
-	_ "github.com/cosmos/cosmos-sdk/x/bank"         // import for side-effects
+	_ "github.com/cosmos/cosmos-sdk/x/authz/module" // 为副作用而导入
+	_ "github.com/cosmos/cosmos-sdk/x/bank"         // 为副作用而导入
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
-	_ "github.com/cosmos/cosmos-sdk/x/consensus" // import for side-effects
+	_ "github.com/cosmos/cosmos-sdk/x/consensus" // 为副作用而导入
 	consensustypes "github.com/cosmos/cosmos-sdk/x/consensus/types"
-	_ "github.com/cosmos/cosmos-sdk/x/distribution" // import for side-effects
+	_ "github.com/cosmos/cosmos-sdk/x/distribution" // 为副作用而导入
 	distrtypes "github.com/cosmos/cosmos-sdk/x/distribution/types"
-	_ "github.com/cosmos/cosmos-sdk/x/epochs" // import for side-effects
+	_ "github.com/cosmos/cosmos-sdk/x/epochs" // 为副作用而导入
 	epochstypes "github.com/cosmos/cosmos-sdk/x/epochs/types"
 	genutiltypes "github.com/cosmos/cosmos-sdk/x/genutil/types"
-	_ "github.com/cosmos/cosmos-sdk/x/gov" // import for side-effects
+	_ "github.com/cosmos/cosmos-sdk/x/gov" // 为副作用而导入
 	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
 	"github.com/cosmos/cosmos-sdk/x/group"
-	_ "github.com/cosmos/cosmos-sdk/x/group/module" // import for side-effects
-	_ "github.com/cosmos/cosmos-sdk/x/mint"         // import for side-effects
+	_ "github.com/cosmos/cosmos-sdk/x/group/module" // 为副作用而导入
+	_ "github.com/cosmos/cosmos-sdk/x/mint"         // 为副作用而导入
 	minttypes "github.com/cosmos/cosmos-sdk/x/mint/types"
-	_ "github.com/cosmos/cosmos-sdk/x/params" // import for side-effects
+	_ "github.com/cosmos/cosmos-sdk/x/params" // 为副作用而导入
 	paramstypes "github.com/cosmos/cosmos-sdk/x/params/types"
-	_ "github.com/cosmos/cosmos-sdk/x/slashing" // import for side-effects
+	_ "github.com/cosmos/cosmos-sdk/x/slashing" // 为副作用而导入
 	slashingtypes "github.com/cosmos/cosmos-sdk/x/slashing/types"
-	_ "github.com/cosmos/cosmos-sdk/x/staking" // import for side-effects
+	_ "github.com/cosmos/cosmos-sdk/x/staking" // 为副作用而导入
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 	icatypes "github.com/cosmos/ibc-go/v10/modules/apps/27-interchain-accounts/types"
 	ibctransfertypes "github.com/cosmos/ibc-go/v10/modules/apps/transfer/types"
@@ -85,7 +85,7 @@ var (
 		{Account: icatypes.ModuleName},
 	}
 
-	// blocked account addresses
+	// 被禁止的模块账户地址
 	blockAccAddrs = []string{
 		authtypes.FeeCollectorName,
 		distrtypes.ModuleName,
@@ -93,27 +93,26 @@ var (
 		stakingtypes.BondedPoolName,
 		stakingtypes.NotBondedPoolName,
 		nft.ModuleName,
-		// We allow the following module accounts to receive funds:
+		// 允许以下模块账户接收资金：
 		// govtypes.ModuleName
 	}
 
-	// application configuration (used by depinject)
+	// 应用配置（由 depinject 使用）
 	appConfig = appconfig.Compose(&appv1alpha1.Config{
 		Modules: []*appv1alpha1.ModuleConfig{
 			{
 				Name: runtime.ModuleName,
 				Config: appconfig.WrapAny(&runtimev1alpha1.Module{
 					AppName: Name,
-					// NOTE: upgrade module is required to be prioritized
+					// 注意：升级模块必须优先执行
 					PreBlockers: []string{
 						upgradetypes.ModuleName,
 						authtypes.ModuleName,
-						// this line is used by starport scaffolding # stargate/app/preBlockers
+						// starport 脚手架使用的占位行 # stargate/app/preBlockers
 					},
-					// During begin block slashing happens after distr.BeginBlocker so that
-					// there is nothing left over in the validator fee pool, so as to keep the
-					// CanWithdrawInvariant invariant.
-					// NOTE: staking module is required if HistoricalEntries param > 0
+					// 在 BeginBlock 中，削减流程发生在 distr.BeginBlocker 之后，
+					// 以确保验证人费用池不会残留资金，从而保持 CanWithdrawInvariant 不变式。
+					// 注意：当 HistoricalEntries 参数大于 0 时必须启用 staking 模块。
 					BeginBlockers: []string{
 						minttypes.ModuleName,
 						distrtypes.ModuleName,
@@ -122,31 +121,31 @@ var (
 						stakingtypes.ModuleName,
 						authz.ModuleName,
 						epochstypes.ModuleName,
-						// ibc modules
+						// IBC 模块
 						ibcexported.ModuleName,
-						// chain modules
+						// 链上业务模块
 						blogmoduletypes.ModuleName,
-						// this line is used by starport scaffolding # stargate/app/beginBlockers
+						// starport 脚手架使用的占位行 # stargate/app/beginBlockers
 					},
 					EndBlockers: []string{
 						govtypes.ModuleName,
 						stakingtypes.ModuleName,
 						feegrant.ModuleName,
 						group.ModuleName,
-						// chain modules
+						// 链上业务模块
 						blogmoduletypes.ModuleName,
-						// this line is used by starport scaffolding # stargate/app/endBlockers
+						// starport 脚手架使用的占位行 # stargate/app/endBlockers
 					},
-					// The following is mostly only needed when ModuleName != StoreKey name.
+					// 下列配置通常只在 ModuleName 与 StoreKey 不一致时需要。
 					OverrideStoreKeys: []*runtimev1alpha1.StoreKeyConfig{
 						{
 							ModuleName: authtypes.ModuleName,
 							KvStoreKey: "acc",
 						},
 					},
-					// NOTE: The genutils module must occur after staking so that pools are
-					// properly initialized with tokens from genesis accounts.
-					// NOTE: The genutils module must also occur after auth so that it can access the params from auth.
+					// 注意：genutils 模块必须位于 staking 之后，
+					// 才能用创世账户的代币正确初始化各个池子。
+					// 注意：genutils 模块也必须位于 auth 之后，以便读取 auth 暴露的参数。
 					InitGenesis: []string{
 						consensustypes.ModuleName,
 						authtypes.ModuleName,
@@ -166,13 +165,13 @@ var (
 						upgradetypes.ModuleName,
 						circuittypes.ModuleName,
 						epochstypes.ModuleName,
-						// ibc modules
+						// IBC 模块
 						ibcexported.ModuleName,
 						ibctransfertypes.ModuleName,
 						icatypes.ModuleName,
-						// chain modules
+						// 链上业务模块
 						blogmoduletypes.ModuleName,
-						// this line is used by starport scaffolding # stargate/app/initGenesis
+						// starport 脚手架使用的占位行 # stargate/app/initGenesis
 					},
 				}),
 			},
@@ -182,9 +181,9 @@ var (
 					Bech32Prefix:                AccountAddressPrefix,
 					ModuleAccountPermissions:    moduleAccPerms,
 					EnableUnorderedTransactions: true,
-					// By default modules authority is the governance module. This is configurable with the following:
-					// Authority: "group", // A custom module authority can be set using a module name
-					// Authority: "cosmos1cwwv22j5ca08ggdv9c2uky355k908694z577tv", // or a specific address
+					// 默认情况下，模块的权限由治理模块掌控。可以通过以下方式自定义：
+					// Authority: "group", // 通过模块名称设置自定义权限控制者
+					// Authority: "cosmos1cwwv22j5ca08ggdv9c2uky355k908694z577tv", // 或者指定某个地址
 				}),
 			},
 			{
@@ -272,7 +271,7 @@ var (
 				Name:   blogmoduletypes.ModuleName,
 				Config: appconfig.WrapAny(&blogmoduletypes.Module{}),
 			},
-			// this line is used by starport scaffolding # stargate/app/moduleConfig
+			// starport 脚手架使用的占位行 # stargate/app/moduleConfig
 		},
 	})
 )

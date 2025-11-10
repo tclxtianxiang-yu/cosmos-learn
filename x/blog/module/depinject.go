@@ -48,7 +48,7 @@ type ModuleOutputs struct {
 }
 
 func ProvideModule(in ModuleInputs) ModuleOutputs {
-	// default to governance authority if not provided
+	// 如果未显式配置，则默认使用治理模块权限地址。
 	authority := authtypes.NewModuleAddress(types.GovModuleName)
 	if in.Config.Authority != "" {
 		authority = authtypes.NewModuleAddressOrBech32Address(in.Config.Authority)

@@ -7,20 +7,20 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
-// AuthKeeper defines the expected interface for the Auth module.
+// AuthKeeper 定义了对 Auth 模块的期望接口。
 type AuthKeeper interface {
 	AddressCodec() address.Codec
-	GetAccount(context.Context, sdk.AccAddress) sdk.AccountI // only used for simulation
-	// Methods imported from account should be defined here
+	GetAccount(context.Context, sdk.AccAddress) sdk.AccountI // 仅用于仿真场景
+	// 需要引入 account 模块的方法应在此声明。
 }
 
-// BankKeeper defines the expected interface for the Bank module.
+// BankKeeper 定义了对 Bank 模块的期望接口。
 type BankKeeper interface {
 	SpendableCoins(context.Context, sdk.AccAddress) sdk.Coins
-	// Methods imported from bank should be defined here
+	// 需要引入 bank 模块的方法应在此声明。
 }
 
-// ParamSubspace defines the expected Subspace interface for parameters.
+// ParamSubspace 定义参数子空间的期望接口。
 type ParamSubspace interface {
 	Get(context.Context, []byte, interface{})
 	Set(context.Context, []byte, interface{})

@@ -46,7 +46,7 @@ func initRootCmd(
 		AddFlags: addModuleInitFlags,
 	})
 
-	// add keybase, auxiliary RPC, query, genesis, and tx child commands
+	// 添加密钥库、辅助 RPC、查询、创世以及交易等子命令
 	rootCmd.AddCommand(
 		server.StatusCommand(),
 		genutilcli.Commands(txConfig, basicManager, app.DefaultNodeHome),
@@ -56,7 +56,7 @@ func initRootCmd(
 	)
 }
 
-// addModuleInitFlags adds more flags to the start command.
+// addModuleInitFlags 为 start 命令添加更多标志位。
 func addModuleInitFlags(startCmd *cobra.Command) {
 }
 
@@ -108,7 +108,7 @@ func txCommand() *cobra.Command {
 	return cmd
 }
 
-// newApp creates the application
+// newApp 创建应用程序实例
 func newApp(
 	logger log.Logger,
 	db dbm.DB,
@@ -124,7 +124,7 @@ func newApp(
 	)
 }
 
-// appExport creates a new app (optionally at a given height) and exports state.
+// appExport 会创建一个新的应用（可选指定高度）并导出状态。
 func appExport(
 	logger log.Logger,
 	db dbm.DB,
@@ -137,8 +137,8 @@ func appExport(
 ) (servertypes.ExportedApp, error) {
 	var bApp *app.App
 
-	// this check is necessary as we use the flag in x/upgrade.
-	// we can exit more gracefully by checking the flag here.
+	// 由于在 x/upgrade 中会使用该标志，此处的检查是必要的。
+	// 通过在这里检查该标志，可以更优雅地退出。
 	homePath, ok := appOpts.Get(flags.FlagHome).(string)
 	if !ok || homePath == "" {
 		return servertypes.ExportedApp{}, errors.New("application home not set")

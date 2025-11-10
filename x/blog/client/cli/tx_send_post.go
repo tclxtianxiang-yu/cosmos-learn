@@ -12,8 +12,8 @@ import (
 	"cosmos-learn/x/blog/types"
 )
 
-// CmdSendSendPost() returns the SendPost send packet command.
-// This command does not use AutoCLI because it gives a better UX to do not.
+// CmdSendSendPost() 返回 SendPost 数据包发送命令。
+// 该命令未启用 AutoCLI，以便提供更佳的交互体验。
 func CmdSendSendPost() *cobra.Command {
 	flagPacketTimeoutTimestamp := "packet-timeout-timestamp"
 
@@ -34,7 +34,7 @@ func CmdSendSendPost() *cobra.Command {
 			argTitle := args[2]
 			argContent := args[3]
 
-			// Get the relative timeout timestamp
+			// 读取相对超时时间戳
 			timeoutTimestamp, err := cmd.Flags().GetUint64(flagPacketTimeoutTimestamp)
 			if err != nil {
 				return err
@@ -61,7 +61,7 @@ func CmdSendSendPost() *cobra.Command {
 			}
 
 			if timeoutTimestamp != 0 {
-				timeoutTimestamp = consensusState.GetTimestamp() + timeoutTimestamp //nolint:staticcheck // client side
+				timeoutTimestamp = consensusState.GetTimestamp() + timeoutTimestamp //nolint:staticcheck // 客户端逻辑
 			}
 
 			msg := types.NewMsgSendSendPost(creator, srcPort, srcChannel, timeoutTimestamp, argTitle, argContent)

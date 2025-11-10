@@ -38,28 +38,26 @@ const (
 
 var FlagEnableStreamingValue bool
 
-// Get flags every time the simulator is run
+// 每次运行模拟器时都重新读取命令行标志
 func init() {
 	simcli.GetSimulatorFlags()
 	flag.BoolVar(&FlagEnableStreamingValue, "EnableStreaming", false, "Enable streaming service")
 }
 
-// fauxMerkleModeOpt returns a BaseApp option to use a dbStoreAdapter instead of
-// an IAVLStore for faster simulation speed.
+// fauxMerkleModeOpt 返回一个 BaseApp 选项，用 dbStoreAdapter 替换 IAVLStore 以提升模拟速度。
 func fauxMerkleModeOpt(bapp *baseapp.BaseApp) {
 	bapp.SetFauxMerkleMode()
 }
 
-// interBlockCacheOpt returns a BaseApp option function that sets the persistent
-// inter-block write-through cache.
+// interBlockCacheOpt 返回 BaseApp 选项函数，用于启用持久化的区块间写入缓存。
 func interBlockCacheOpt() func(*baseapp.BaseApp) {
 	return baseapp.SetInterBlockCache(store.NewCommitKVStoreCacheManager())
 }
 
-// BenchmarkSimulation run the chain simulation
-// Running using ignite command:
+// BenchmarkSimulation 运行完整链级模拟。
+// 通过 ignite 命令运行：
 // `ignite chain simulate -v --numBlocks 200 --blockSize 50`
-// Running as go benchmark test:
+// 以 Go 基准测试运行：
 // `go test -benchmem -run=^$ -bench ^BenchmarkSimulation ./app -NumBlocks=200 -BlockSize 50 -Commit=true -Verbose=true -Enabled=true`
 func BenchmarkSimulation(b *testing.B) {
 	simcli.FlagSeedValue = time.Now().Unix()
@@ -87,7 +85,7 @@ func BenchmarkSimulation(b *testing.B) {
 	bApp := New(logger, db, nil, true, appOptions, fauxMerkleModeOpt, baseapp.SetChainID(SimAppChainID))
 	require.Equal(b, Name, bApp.Name())
 
-	// run randomized simulation
+	// 运行随机化模拟
 	_, simParams, simErr := simulation.SimulateFromSeed(
 		b,
 		os.Stdout,
@@ -100,7 +98,7 @@ func BenchmarkSimulation(b *testing.B) {
 		bApp.AppCodec(),
 	)
 
-	// export state and simParams before the simulation error is checked
+	// 在检查模拟报错前导出状态与模拟参数
 	err = simtestutil.CheckExportSimulation(bApp, config, simParams)
 	require.NoError(b, err)
 	require.NoError(b, simErr)
@@ -134,7 +132,7 @@ func TestFullAppSimulation(t *testing.T) {
 	}
 	require.Equal(t, "cosmos-learn", app.Name())
 
-	// run randomized simulation
+	// 运行随机化模拟
 	_, simParams, simErr := simulation.SimulateFromSeed(
 		t,
 		os.Stdout,
@@ -147,7 +145,7 @@ func TestFullAppSimulation(t *testing.T) {
 		app.AppCodec(),
 	)
 
-	// export state and simParams before the simulation error is checked
+	// 在检查模拟报错前导出状态与模拟参数
 	err = simtestutil.CheckExportSimulation(app, config, simParams)
 	require.NoError(t, err)
 	require.NoError(t, simErr)
@@ -178,7 +176,7 @@ func TestAppImportExport(t *testing.T) {
 	bApp := New(logger, db, nil, true, appOptions, fauxMerkleModeOpt, baseapp.SetChainID(SimAppChainID))
 	require.Equal(t, Name, bApp.Name())
 
-	// Run randomized simulation
+	// 运行随机化模拟
 	_, simParams, simErr := simulation.SimulateFromSeed(
 		t,
 		os.Stdout,
@@ -191,7 +189,7 @@ func TestAppImportExport(t *testing.T) {
 		bApp.AppCodec(),
 	)
 
-	// export state and simParams before the simulation error is checked
+	// 在检查模拟报错前导出状态与模拟参数
 	err = simtestutil.CheckExportSimulation(bApp, config, simParams)
 	require.NoError(t, err)
 	require.NoError(t, simErr)
@@ -238,7 +236,7 @@ func TestAppImportExport(t *testing.T) {
 	require.NoError(t, err)
 	fmt.Printf("comparing stores...\n")
 
-	// skip certain prefixes
+	// 跳过部分前缀对应的数据
 	skipPrefixes := map[string][][]byte{
 		upgradetypes.StoreKey: {
 			[]byte{upgradetypes.VersionMapByte},
@@ -257,7 +255,7 @@ func TestAppImportExport(t *testing.T) {
 	require.NotEmpty(t, storeKeys)
 
 	for _, appKeyA := range storeKeys {
-		// only compare kvstores
+		// 仅比较 KVStore
 		if _, ok := appKeyA.(*storetypes.KVStoreKey); !ok {
 			continue
 		}
@@ -298,7 +296,7 @@ func TestAppSimulationAfterImport(t *testing.T) {
 	bApp := New(logger, db, nil, true, appOptions, fauxMerkleModeOpt, baseapp.SetChainID(SimAppChainID))
 	require.Equal(t, Name, bApp.Name())
 
-	// Run randomized simulation
+	// 运行随机化模拟
 	stopEarly, simParams, simErr := simulation.SimulateFromSeed(
 		t,
 		os.Stdout,
@@ -311,7 +309,7 @@ func TestAppSimulationAfterImport(t *testing.T) {
 		bApp.AppCodec(),
 	)
 
-	// export state and simParams before the simulation error is checked
+	// 在检查模拟报错前导出状态与模拟参数
 	err = simtestutil.CheckExportSimulation(bApp, config, simParams)
 	require.NoError(t, err)
 	require.NoError(t, simErr)
@@ -376,10 +374,10 @@ func TestAppStateDeterminism(t *testing.T) {
 	config.ChainID = SimAppChainID
 
 	numSeeds := 3
-	numTimesToRunPerSeed := 3 // This used to be set to 5, but we've temporarily reduced it to 3 for the sake of faster CI.
+	numTimesToRunPerSeed := 3 // 该值原先为 5，为加快 CI 暂时调整为 3。
 	appHashList := make([]json.RawMessage, numTimesToRunPerSeed)
 
-	// We will be overriding the random seed and just run a single simulation on the provided seed value
+	// 当外部指定随机种子时，只运行一次对应种子的模拟
 	if config.Seed != simcli.DefaultSeedValue {
 		numSeeds = 1
 	}

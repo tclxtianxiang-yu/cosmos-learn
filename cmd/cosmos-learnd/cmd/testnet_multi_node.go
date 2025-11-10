@@ -63,7 +63,7 @@ type initArgs struct {
 	ports                  map[int]string
 }
 
-// NewTestnetMultiNodeCmd returns a cmd to initialize all files for tendermint testnet and application
+// NewTestnetMultiNodeCmd 返回一个命令，用于初始化 Tendermint 测试网及应用所需的全部文件
 func NewTestnetMultiNodeCmd(mbm module.BasicManager, genBalIterator banktypes.GenesisBalancesIterator) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "multi-node",
@@ -101,7 +101,7 @@ Example:
 			args.ports = map[int]string{}
 			args.validatorsStakesAmount = make(map[int]sdk.Coin)
 			top := 0
-			// If the flag string is invalid, the amount will default to 100000000.
+			// 如果标志字符串无效，将金额默认设为 100000000。
 			if s, err := cmd.Flags().GetString(flagValidatorsStakeAmount); err == nil {
 				for _, amount := range strings.Split(s, ",") {
 					a, ok := math.NewIntFromString(amount)
@@ -149,7 +149,7 @@ func addTestnetFlagsToCmd(cmd *cobra.Command) {
 	cmd.Flags().String(server.FlagMinGasPrices, fmt.Sprintf("0.0001%s", sdk.DefaultBondDenom), "Minimum gas prices to accept for transactions; All fees in a tx must meet this minimum (e.g. 0.01photino,0.001stake)")
 	cmd.Flags().String(flags.FlagKeyType, string(hd.Secp256k1Type), "Key signing algorithm to generate keys for")
 
-	// support old flags name for backwards compatibility
+	// 保留旧标志名称以维持向后兼容
 	cmd.Flags().SetNormalizeFunc(func(f *pflag.FlagSet, name string) pflag.NormalizedName {
 		if name == "algo" {
 			name = flags.FlagKeyType
@@ -159,7 +159,7 @@ func addTestnetFlagsToCmd(cmd *cobra.Command) {
 	})
 }
 
-// initTestnetFiles initializes testnet files for a testnet to be run in a separate process
+// initTestnetFiles 会初始化测试网文件，以便在独立进程中运行该测试网
 func initTestnetFiles(
 	clientCtx client.Context,
 	cmd *cobra.Command,
@@ -246,7 +246,7 @@ func initTestnetFiles(
 			return err
 		}
 
-		// save private key seed words
+		// 保存私钥助记词
 		file := filepath.Join(nodeDir, fmt.Sprintf("%v.json", "key_seed"))
 		if err := writeFile(file, nodeDir, cliPrint); err != nil {
 			return err
@@ -315,7 +315,7 @@ func initTestnetFiles(
 	if err := initGenFiles(clientCtx, mbm, args.chainID, genAccounts, genBalances, genFiles, args.numValidators); err != nil {
 		return err
 	}
-	// copy gentx file
+	// 复制 gentx 文件
 	for i := 0; i < args.numValidators; i++ {
 		for _, file := range gentxsFiles {
 			nodeDirName := fmt.Sprintf("%s%d", args.nodeDirPrefix, i)
@@ -365,7 +365,7 @@ func initGenFiles(
 ) error {
 	appGenState := mbm.DefaultGenesis(clientCtx.Codec)
 
-	// set the accounts in the genesis state
+	// 在创世状态中写入账户信息
 	var authGenState authtypes.GenesisState
 	clientCtx.Codec.MustUnmarshalJSON(appGenState[authtypes.ModuleName], &authGenState)
 
@@ -377,7 +377,7 @@ func initGenFiles(
 	authGenState.Accounts = accounts
 	appGenState[authtypes.ModuleName] = clientCtx.Codec.MustMarshalJSON(&authGenState)
 
-	// set the balances in the genesis state
+	// 在创世状态中写入余额信息
 	var bankGenState banktypes.GenesisState
 	clientCtx.Codec.MustUnmarshalJSON(appGenState[banktypes.ModuleName], &bankGenState)
 
@@ -398,7 +398,7 @@ func initGenFiles(
 		Validators: nil,
 	}
 
-	// generate empty genesis files for each validator and save
+	// 为每个验证人生成空的创世文件并保存
 	for i := 0; i < numValidators; i++ {
 		if err := genDoc.SaveAs(genFiles[i]); err != nil {
 			return err
@@ -453,13 +453,13 @@ func collectGenFiles(
 		nodeConfig.Instrumentation.Prometheus = true
 		cmtconfig.WriteConfigFile(filepath.Join(nodeConfig.RootDir, "config", "config.toml"), nodeConfig)
 		if appState == nil {
-			// set the canonical application state (they should not differ)
+			// 设定权威的应用状态（后续实例应保持一致）
 			appState = nodeAppState
 		}
 
 		genFile := nodeConfig.GenesisFile()
 
-		// overwrite each validator's genesis file to have a canonical genesis time
+		// 将每个验证人的创世文件覆盖为统一的创世时间
 		if err := genutil.ExportGenesisFileWithTime(genFile, chainID, nil, appState, genTime); err != nil {
 			return err
 		}
@@ -469,33 +469,33 @@ func collectGenFiles(
 }
 
 func copyFile(src, dstDir string) (int64, error) {
-	// Extract the file name from the source path
+	// 从源路径中提取文件名
 	fileName := filepath.Base(src)
 
-	// Create the full destination path (directory + file name)
+	// 构建完整的目标路径（目录 + 文件名）
 	dst := filepath.Join(dstDir, fileName)
 
-	// Open the source file
+	// 打开源文件
 	sourceFile, err := os.Open(src)
 	if err != nil {
 		return 0, err
 	}
 	defer sourceFile.Close()
 
-	// Create the destination file
+	// 创建目标文件
 	destinationFile, err := os.Create(dst)
 	if err != nil {
 		return 0, err
 	}
 	defer destinationFile.Close()
 
-	// Copy content from the source file to the destination file
+	// 将源文件内容复制到目标文件
 	bytesCopied, err := io.Copy(destinationFile, sourceFile)
 	if err != nil {
 		return 0, err
 	}
 
-	// Ensure the content is written to the destination file
+	// 确保内容写入目标文件
 	err = destinationFile.Sync()
 	if err != nil {
 		return 0, err
@@ -504,9 +504,9 @@ func copyFile(src, dstDir string) (int64, error) {
 	return bytesCopied, nil
 }
 
-// isSubDir checks if dstDir is a parent directory of src
+// isSubDir 用于检查 dstDir 是否为 src 的父目录
 func isSubDir(src, dstDir string) (bool, error) {
-	// Get the absolute path of src and dstDir
+	// 获取 src 与 dstDir 的绝对路径
 	absSrc, err := filepath.Abs(src)
 	if err != nil {
 		return false, err
@@ -516,18 +516,18 @@ func isSubDir(src, dstDir string) (bool, error) {
 		return false, err
 	}
 
-	// Check if absSrc is within absDstDir
+	// 检查 absSrc 是否位于 absDstDir 之内
 	relativePath, err := filepath.Rel(absDstDir, absSrc)
 	if err != nil {
 		return false, err
 	}
 
-	// If the relative path doesn't go up the directory tree (doesn't contain ".."), it is inside dstDir
+	// 如果相对路径未向上返回目录（不包含 ".."），则说明它位于 dstDir 内部
 	isInside := !strings.HasPrefix(relativePath, "..") && !filepath.IsAbs(relativePath)
 	return isInside, nil
 }
 
-// generateRandomString generates a random string of the specified length.
+// generateRandomString 会生成指定长度的随机字符串。
 func generateRandomString(length int) string {
 	const charset = "abcdefghijklmnopqrstuvwxyz0123456789"
 	var seededRand *rand.Rand = rand.New(rand.NewSource(time.Now().UnixNano()))

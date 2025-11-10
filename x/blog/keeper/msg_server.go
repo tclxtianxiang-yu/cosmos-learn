@@ -8,8 +8,7 @@ type msgServer struct {
 	Keeper
 }
 
-// NewMsgServerImpl returns an implementation of the MsgServer interface
-// for the provided Keeper.
+// NewMsgServerImpl 根据传入的 Keeper 返回 MsgServer 接口实现。
 func NewMsgServerImpl(keeper Keeper) types.MsgServer {
 	return &msgServer{Keeper: keeper}
 }

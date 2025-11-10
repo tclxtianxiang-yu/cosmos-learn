@@ -16,8 +16,8 @@ type Keeper struct {
 	storeService corestore.KVStoreService
 	cdc          codec.Codec
 	addressCodec address.Codec
-	// Address capable of executing a MsgUpdateParams message.
-	// Typically, this should be the x/gov module account.
+	// 有权执行 MsgUpdateParams 消息的地址。
+	// 通常应指向 x/gov 模块账户。
 	authority []byte
 
 	Schema collections.Schema
@@ -65,7 +65,7 @@ func NewKeeper(
 	return k
 }
 
-// GetAuthority returns the module's authority.
+// GetAuthority 返回模块的权限地址。
 func (k Keeper) GetAuthority() []byte {
 	return k.authority
 }

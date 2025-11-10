@@ -12,7 +12,7 @@ import (
 	"cosmos-learn/x/blog/types"
 )
 
-// GenerateGenesisState creates a randomized GenState of the module.
+// GenerateGenesisState 随机生成模块的 GenesisState。
 func (AppModule) GenerateGenesisState(simState *module.SimulationState) {
 	accs := make([]string, len(simState.Accounts))
 	for i, acc := range simState.Accounts {
@@ -26,10 +26,10 @@ func (AppModule) GenerateGenesisState(simState *module.SimulationState) {
 	simState.GenState[types.ModuleName] = simState.Cdc.MustMarshalJSON(&blogGenesis)
 }
 
-// RegisterStoreDecoder registers a decoder.
+// RegisterStoreDecoder 注册存储解码器。
 func (am AppModule) RegisterStoreDecoder(_ simtypes.StoreDecoderRegistry) {}
 
-// WeightedOperations returns the all the gov module operations with their respective weights.
+// WeightedOperations 返回治理模块的全部操作及其对应权重。
 func (am AppModule) WeightedOperations(simState module.SimulationState) []simtypes.WeightedOperation {
 	operations := make([]simtypes.WeightedOperation, 0)
 	const (
@@ -81,7 +81,7 @@ func (am AppModule) WeightedOperations(simState module.SimulationState) []simtyp
 	return operations
 }
 
-// ProposalMsgs returns msgs used for governance proposals for simulations.
+// ProposalMsgs 返回仿真环境下用于治理提案的消息列表。
 func (am AppModule) ProposalMsgs(simState module.SimulationState) []simtypes.WeightedProposalMsg {
 	return []simtypes.WeightedProposalMsg{}
 }
