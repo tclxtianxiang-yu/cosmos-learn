@@ -28,3 +28,8 @@ var (
 
 // ParamsKey is the prefix to retrieve all Params
 var ParamsKey = collections.NewPrefix("p_blog")
+
+var (
+	PostKey      = collections.NewPrefix("post/value/")
+	PostCountKey = collections.NewPrefix("post/count/")
+)

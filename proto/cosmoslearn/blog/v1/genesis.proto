@@ -4,6 +4,7 @@ package cosmoslearn.blog.v1;
 
 import "amino/amino.proto";
 import "cosmoslearn/blog/v1/params.proto";
+import "cosmoslearn/blog/v1/post.proto";
 import "gogoproto/gogo.proto";
 
 option go_package = "cosmos-learn/x/blog/types";
@@ -16,4 +17,6 @@ message GenesisState {
     (amino.dont_omitempty) = true
   ];
   string port_id = 2;
+  repeated Post post_list = 3 [(gogoproto.nullable) = false];
+  uint64 post_count = 4;
 }

@@ -26,6 +26,8 @@ type Keeper struct {
 	Port collections.Item[string]
 
 	ibcKeeperFn func() *ibckeeper.Keeper
+	PostSeq     collections.Sequence
+	Post        collections.Map[uint64, types.Post]
 }
 
 func NewKeeper(
@@ -51,8 +53,9 @@ func NewKeeper(
 		ibcKeeperFn: ibcKeeperFn,
 		Port:        collections.NewItem(sb, types.PortKey, "port", collections.StringValue),
 		Params:      collections.NewItem(sb, types.ParamsKey, "params", codec.CollValue[types.Params](cdc)),
+		Post:        collections.NewMap(sb, types.PostKey, "post", collections.Uint64Key, codec.CollValue[types.Post](cdc)),
+		PostSeq:     collections.NewSequence(sb, types.PostCountKey, "postSequence"),
 	}
-
 	schema, err := sb.Build()
 	if err != nil {
 		panic(err)
